@@ -36,9 +36,35 @@ jobs:
             npm install
             npm run build
 
+  test-frontend:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: 
+          name: Run frontend test
+          command: |
+            cd frontend
+            npm install
+            npm run test
+  
+  test-backend:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: 
+          name: Run backend test
+          command: |
+            cd backend
+            npm install
+            npm run test
+
 
 workflows:
   default:
     jobs:
       - build-frontend
       - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
