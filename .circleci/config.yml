@@ -15,7 +15,7 @@ commands:
           name: Destroy environment 
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name {{ stack_name }}
+            aws cloudformation delete-stack --stack-name <<parameters.stack_name>>
 
 jobs: 
   build-frontend:
@@ -128,7 +128,7 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       - destory_environment:
-          stack_name: ${CIRCLE_WORKFLOW_ID:0:7}
+          stack_name: "${CIRCLE_WORKFLOW_ID:0:7}"
 
 workflows:
   default:
