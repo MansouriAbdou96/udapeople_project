@@ -127,8 +127,11 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
+            
       - destory_environment:
-          stack_name: "${CIRCLE_WORKFLOW_ID:0:7}"
+          stack_name: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+      - destory_environment:
+          stack_name: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
 
 workflows:
   default:
