@@ -6,13 +6,14 @@ version: 2.1
 
 commands:
   destory_environment:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      stack_name:
+        type: string
     steps: 
       - run: 
           name: Destroy environment 
           when: on_fail
-          parameters:
-            stack_name:
-              type: string
           command: |
             aws cloudformation delete-stack --stack-name {{ stack_name }}
 
