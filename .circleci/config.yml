@@ -118,12 +118,12 @@ jobs:
           command: |
             aws ec2 describe-instances --filters "Name=tag:Name,Values=${CIRCLE_WORKFLOW_ID:0:7}" \
               --query "Reservations[*].Instances[*].PublicIpAddress" \
-              --output text >> project/.circleci/ansible/inventory.txt
+              --output text >> ~/inventory.txt
       # check that the Public Ip address has been add      
       - run: 
           name: print inventory file
           command: |
-            cat project/.circleci/ansible/inventory.txt
+            cat ~/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
