@@ -94,9 +94,9 @@ jobs:
     steps:
       - checkout
       - run: 
-          name: Install tar and gzip 
+          name: Install tar gzip 
           command: |
-              apk add --no-cache tar gzip 
+              yum -y install tar gzip 
       - run:
           name: Ensure back-end infrastructure exists
           command: |
