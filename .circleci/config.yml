@@ -18,6 +18,24 @@ commands:
             aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.stack_name>>
             aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.stack_name>>
 
+  revert-migrations:
+    description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+      workflowID:
+        type: string     
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            SUCCESS=$(curl https://kvdb.io/JtRRna2uqYBZYR8JUF26ZT/migration_<<parameters.workflowID>>)
+            if(( $SUCCESS==1 )); 
+            then
+              cd ~/project/backend
+              npm install
+              npm run migrations:revert 
+            fi
+
 jobs: 
   build-frontend:
     <<: *defaults
@@ -173,13 +191,156 @@ jobs:
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-      - run: 
-          name: trying to enable destory environment
-          command: |
-            exit 1
       
       - destory_environment:
           stack_name: "${CIRCLE_WORKFLOW_ID:0:7}"
+
+  run-migrations:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
+          name: Run migrations
+          command: |
+            cd backend 
+            npm install 
+            npm run migrations > migrations_dump.txt
+      - run:
+          name: Send migration results to kvdb.io
+          command: |
+            # Check the output for the success message
+            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt; then
+                # Send a "1" to indicate success to the key-value store
+                curl https://kvdb.io/JtRRna2uqYBZYR8JUF26ZT/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
+            else
+                # Send a "0" to indicate failure to the key-value store
+                curl https://kvdb.io/JtRRna2uqYBZYR8JUF26ZT/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '0'
+            fi
+      
+      - revert-migrations:
+          workflowID: "${CIRCLE_WORKFLOW_ID:0:7}"
+
+  deploy-frontend:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install Python
+          command: |
+            yum install -y python3
+            python3 --version
+      - run:
+          name: Install Ansible
+          command: |
+            yum install -y ansible
+            ansible --version
+      - run:
+          name: Install Node and NPM
+          command: |
+            yum install -y nodejs
+            node -v
+            npm -v
+      - run:
+          name: Get backend url
+          command: |
+            export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query "Reservations[*].Instances[*].PublicIpAddress" \
+              --output text)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "API_URL = ${API_URL}"
+            echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            cat frontend/.env
+      - run:
+          name: Deploy frontend objects
+          command: |
+            cd frontend
+            npm install
+            npm run build
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+
+      - revert-migrations:
+          workflowID: "${CIRCLE_WORKFLOW_ID:0:7}" 
+      - destory_environment:
+          stack_name: "${CIRCLE_WORKFLOW_ID:0:7}"
+
+  deploy-backend:
+    docker:
+      - image: ansible/ansible:latest
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: 
+            - "2c:37:66:5a:07:a9:7b:de:de:0d:5a:51:c2:64:19:fa"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install Tar and Gzip
+          command: |
+            apt-get update
+            apt-get install -y tar gzip
+      - run:
+          name: Install Ansible
+          command: |
+            apt-get install -y ansible
+      - run:
+          name: Install Nodejs and npm
+          command: |
+            apt-get install -y nodejs npm
+      - run:
+          name: Check installed version
+          command: |
+            tar --version
+            gzip --version
+            ansible --version
+            node -v
+            npm -v
+      - run:
+          name: Deploy backend
+          command: |
+            cd backend
+            npm i
+            npm run build
+            cd ..
+            # Zip the directory
+            tar -C backend -czvf artifact.tar.gz .
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
+      
+      - revert-migrations:
+          workflowID: "${CIRCLE_WORKFLOW_ID:0:7}" 
+      - destory_environment:
+          stack_name: "${CIRCLE_WORKFLOW_ID:0:7}"
+
+  smoke-test:
+    docker:
+      # Lightweight Docker image 
+    steps:
+      # Checkout code from git
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+      - run:
+          name: Get backend url
+          command: |
+            # your code here
+      - run:
+          name: Backend smoke test.
+          command: |
+            # your code here
+      - run:
+          name: Frontend smoke test.
+          command: |
+            # your code here
+      # Here's where you will add some code to rollback on failure
 
 workflows:
   default:
@@ -201,3 +362,9 @@ workflows:
               only: [test-feature-branch]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
