@@ -156,7 +156,8 @@ jobs:
           name: Configure server
           command: |
             cd .circleci/ansible
-            ansible-playbook -i inventory.txt configure-server.yml
+            ansible-playbook -i inventory.txt \
+              -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"' configure-server.yml
       - run: 
           name: trying to enable destory environment
           command: |
