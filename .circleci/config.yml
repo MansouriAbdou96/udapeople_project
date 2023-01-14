@@ -115,7 +115,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [backend-scan]
+          keys: [backend-build]
       - run: 
           name: Scan backend dependencies
           command: |
@@ -124,9 +124,6 @@ jobs:
             npm audit fix --audit-level=critical --force
             npm audit fix --force
             npm audit --audit-level=critical
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-scan
 
   deploy-infrastructure:
     docker:
@@ -203,13 +200,27 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [backend-scan]
+          keys: [backend-build]
+      - run: 
+          name: install awscli
+          command: |
+            apt-get update && apt-get install -y python3-pip 
+            pip3 install awscli
       - run:
-          name: Run migrations
+          name: npm install and build
           command: |
             cd backend 
             npm install 
+            npm run build   
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
             npm run migrations > migrations_dump.txt
+      - run: 
+          name: Cat migrations_dump.txt
+          command: |
+            cat migrations_dump.txt
       - run:
           name: Send migration results to kvdb.io
           command: |
