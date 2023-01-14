@@ -194,7 +194,7 @@ jobs:
       
       - destory_environment:
           stack_name: "${CIRCLE_WORKFLOW_ID:0:7}"
-
+# there is problem with npm run migrations need to be fixed.
   run-migrations:
     <<: *defaults
     steps:
