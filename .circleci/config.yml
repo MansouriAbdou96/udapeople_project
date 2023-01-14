@@ -161,8 +161,7 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update ansible 
-            pip3 install awscli
-      # check that the Public Ip address has been add      
+            pip3 install awscli 
       - run: 
           name: print inventory file
           command: |
