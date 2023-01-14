@@ -117,6 +117,7 @@ jobs:
           name: Add back-end ip to ansible inventory
           command: |
             cd .circleci/ansible
+            echo "[web]" >> inventory.txt
             aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query "Reservations[*].Instances[*].PublicIpAddress" \
               --output text >> inventory.txt
@@ -155,6 +156,10 @@ jobs:
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
+      - run: 
+          name: trying to enable destory environment
+          command: |
+            exit 1
       
       - destory_environment:
           stack_name: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
