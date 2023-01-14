@@ -21,8 +21,9 @@
 
     - name: "install python for Ansible."
       become: yes
-      raw: test -e /usr/bin/python3 || (apt update -y && apt install python3 -y)
-      change_when: false 
+      apt:
+        name: python3
+        state: latest
 
   environment:
     - TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION')}}"
