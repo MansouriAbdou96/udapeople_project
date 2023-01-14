@@ -226,12 +226,10 @@ jobs:
           name: Send migration results to kvdb.io
           command: |
             # Check the output for the success message
-            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt; then
+            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+            then
                 # Send a "1" to indicate success to the key-value store
-                curl https://kvdb.io/JtRRna2uqYBZYR8JUF26ZT/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
-            else
-                # Send a "0" to indicate failure to the key-value store
-                curl https://kvdb.io/JtRRna2uqYBZYR8JUF26ZT/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '0'
+                curl --insecure https://kvdb.io/JtRRna2uqYBZYR8JUF26ZT/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
             fi
       
       - revert-migrations:
