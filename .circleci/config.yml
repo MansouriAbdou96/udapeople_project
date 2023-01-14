@@ -247,6 +247,7 @@ jobs:
       - run:
           name: Install Python
           command: |
+            yum -y install tar gzip 
             yum install -y python3
             python3 --version
       - run:
@@ -286,7 +287,7 @@ jobs:
 
   deploy-backend:
     docker:
-      - image: ansible/ansible:latest
+      - image: python:3.9.16-alpine3.17
     steps:
       - checkout
       - add_ssh_keys:
@@ -295,26 +296,11 @@ jobs:
       - attach_workspace:
           at: ~/
       - run:
-          name: Install Tar and Gzip
+          name: Install dependencies
           command: |
-            apt-get update
-            apt-get install -y tar gzip
-      - run:
-          name: Install Ansible
-          command: |
-            apt-get install -y ansible
-      - run:
-          name: Install Nodejs and npm
-          command: |
-            apt-get install -y nodejs npm
-      - run:
-          name: Check installed version
-          command: |
-            tar --version
-            gzip --version
-            ansible --version
-            node -v
-            npm -v
+            apk add --no-cache tar gzip
+            pip install awscli
+            apk add --update nodejs npm ansible zip
       - run:
           name: Deploy backend
           command: |
