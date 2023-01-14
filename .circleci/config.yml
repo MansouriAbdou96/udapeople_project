@@ -15,35 +15,48 @@ commands:
           name: Destroy environment 
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name <<parameters.stack_name>>
+            aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.stack_name>>
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.stack_name>>
 
 jobs: 
   build-frontend:
     <<: *defaults
     steps:
       - checkout
+      - restore_cache:
+          keys: [frontend-build]
       - run: 
           name: frontend build
           command: |
             cd frontend
             npm install
             npm run build
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: frontend-build
 
   build-backend:
     <<: *defaults
     steps:
       - checkout
+      - restore_cache:
+          keys: [backend-build]
       - run: 
           name: backend build
           command: |
             cd backend
             npm install
             npm run build
-
+      - save_cache:
+          paths: [backend/node_modules]
+          key: backend-build
+      
   test-frontend:
     <<: *defaults
     steps:
       - checkout
+      - restore_cache:
+          keys: [frontend-build]
       - run: 
           name: Run frontend test
           command: |
@@ -55,6 +68,8 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+      - restore_cache:
+          keys: [backend-build]
       - run: 
           name: Run backend test
           command: |
@@ -66,6 +81,8 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+      - restore_cache:
+          keys: [frontend-build]
       - run: 
           name: Scan frontend dependencies
           command: |
@@ -79,6 +96,8 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+      - restore_cache:
+          keys: [backend-build]
       - run: 
           name: Scan backend dependencies
           command: |
@@ -117,29 +136,20 @@ jobs:
           name: Add back-end ip to ansible inventory
           command: |
             cd .circleci/ansible
-            echo "[web]" >> inventory.txt
             aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --query "Reservations[*].Instances[*].PublicIpAddress" \
               --output text >> inventory.txt
-      # check that the Public Ip address has been add      
-      - run: 
-          name: print inventory file
-          command: |
-            cd .circleci/ansible
-            cat inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
             
       - destory_environment:
-          stack_name: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
-      - destory_environment:
-          stack_name: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+          stack_name: "${CIRCLE_WORKFLOW_ID:0:7}"
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: python:3.9.16-alpine3.17
     steps:
       - checkout 
       - add_ssh_keys:
@@ -152,21 +162,24 @@ jobs:
           command: |
             apk add --update ansible 
             pip3 install awscli
+      # check that the Public Ip address has been add      
+      - run: 
+          name: print inventory file
+          command: |
+            cd .circleci/ansible
+            cat inventory.txt
       - run:
           name: Configure server
           command: |
             cd .circleci/ansible
-            ansible-playbook -i inventory.txt \
-              -e 'ansible_ssh_common_args="-o StrictHostKeyChecking=no"' configure-server.yml
+            ansible-playbook -i inventory.txt configure-server.yml
       - run: 
           name: trying to enable destory environment
           command: |
             exit 1
       
       - destory_environment:
-          stack_name: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
-      - destory_environment:
-          stack_name: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+          stack_name: "${CIRCLE_WORKFLOW_ID:0:7}"
 
 workflows:
   default:
