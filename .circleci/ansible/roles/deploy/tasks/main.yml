@@ -17,6 +17,6 @@
     creates: ~/backend/node_modules/
 
 - name: Start npm service
-  command: pm2 start npm -f ./main.js -- run start 
+  command: pm2 start npm -f ./dist/main.js -- run start 
   args:
     chdir: ~/backend/ # maybe i need to start npm in /opt/backend/src/main.ts 
