@@ -13,8 +13,8 @@
 - name: Install npm dependencies
   command: npm install
   args:
-    chdir: ~/
-    creates: ~/node_modules/
+    chdir: ~/backend/
+    creates: ~/backend/node_modules/
 
 - name: Stop default pm2 service
   command: pm2 stop default
