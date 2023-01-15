@@ -18,4 +18,17 @@
 
 - name: Start npm service
   shell: |
-    pm2 start ~/backend/src/main.ts -f 
+    sudo npm install -g ts-node
+    pm2 start ~/backend/src/main.ts -i 0 -f --interpreter /usr/local/bin/ts-node
+
+
+  environment:
+      - TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION')}}"
+      - TYPEORM_ENTITIES: "{{ lookup('env', 'TYPEORM_ENTITIES')}}"
+      - TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST')}}"
+      - TYPEORM_PORT: 5432
+      - TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME')}}"
+      - TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD')}}"
+      - TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE')}}"
+      - TYPEORM_MIGRATIONS: "{{ lookup('env', 'TYPEORM_MIGRATIONS')}}"
+      - TYPEORM_MIGRATIONS_DIR: "{{ lookup('env', 'TYPEORM_MIGRATIONS_DIR')}}"
