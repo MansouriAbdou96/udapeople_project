@@ -16,10 +16,7 @@
     chdir: ~/backend/
     creates: ~/backend/node_modules/
 
-- name: Stop default pm2 service
-  command: pm2 stop default
-
 - name: Start npm service
   command: pm2 start npm -f ./main.js -- run start 
   args:
-    cwd: ~/backend/ # maybe i need to start npm in /opt/backend/src/main.ts 
+    chdir: ~/backend/ # maybe i need to start npm in /opt/backend/src/main.ts 
