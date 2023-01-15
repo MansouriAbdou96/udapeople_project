@@ -259,7 +259,6 @@ jobs:
           name: Install Ansible
           command: |
             pip3 install --user ansible
-            sudo yum install -y npm
       - run:
           name: Get backend url
           command: |
