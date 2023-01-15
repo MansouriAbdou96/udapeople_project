@@ -2,24 +2,24 @@
 
 - name: creates directory
   file: 
-    path: ~/web
+    path: ~/backend
     state: directory
 
 - name: Extract the zipped artifact
   unarchive:
     src: ~/project/artifact.tar.gz
-    dest: ~/web/backend/
+    dest: ~/backend/
 
 - name: Install npm dependencies
   command: npm install
   args:
-    chdir: ~/web/backend
-    creates: ~/web/backend/node_modules
+    chdir: ~/
+    creates: ~/node_modules/
 
 - name: Stop default pm2 service
   command: pm2 stop default
 
 - name: Start npm service
-  command: pm2 start npm -f ./src/main.js -- run start 
+  command: pm2 start npm -f ./main.js -- run start 
   args:
-    cwd: ~/web/backend/ # maybe i need to start npm in /opt/backend/src/main.ts 
+    cwd: ~/backend/ # maybe i need to start npm in /opt/backend/src/main.ts 
