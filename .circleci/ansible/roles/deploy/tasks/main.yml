@@ -1,25 +1,25 @@
 ---
 
-- name: Copy the artifact file to the EC2 instance
-  synchronize:
-    src: "~/project/artifact.tar.gz"
-    dest: /tmp/
+- name: creates directory
+  file: 
+    path: ~/web
+    state: directory
 
 - name: Extract the zipped artifact
   unarchive:
-    src: "/tmp/artifact.tar.gz"
-    dest: /opt/
+    src: ~/project/artifact.tar.gz
+    dest: ~/web/backend/
 
 - name: Install npm dependencies
   command: npm install
   args:
-    chdir: /opt/backend
-    creates: /opt/backend/node_modules
+    chdir: ~/web/backend
+    creates: ~/web/backend/node_modules
 
 - name: Stop default pm2 service
   command: pm2 stop default
 
 - name: Start npm service
-  command: pm2 start "ts-node -r dotenv/config src/main.ts" --name "udapeople"
+  command: pm2 start npm -f ./src/main.js -- run start 
   args:
-    cwd: /opt/backend/ # maybe i need to start npm in /opt/backend/src/main.ts 
+    cwd: ~/web/backend/ # maybe i need to start npm in /opt/backend/src/main.ts 
