@@ -242,8 +242,6 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/
       - run:
           name: Install Python
           command: |
@@ -364,6 +362,48 @@ jobs:
           workflowID: "${CIRCLE_WORKFLOW_ID:0:7}" 
       - destory_environment:
           stack_name: "${CIRCLE_WORKFLOW_ID:0:7}"
+
+  cloudfront-update:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum -y install tar gzip
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            cd .circleci/files
+            aws cloudformation deploy \
+              --template-file cloudfront.yml \
+              --stack-name InitialStack\
+              --parameter-overrides WorkflowID="udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+      
+      - revert-migrations:
+          workflowID: "${CIRCLE_WORKFLOW_ID:0:7}" 
+      - destory_environment:
+          stack_name: "${CIRCLE_WORKFLOW_ID:0:7}"
+
+  cleanup:
+    docker:
+      - image: python:3.9.16-alpine3.17
+    steps:
+      - checkout
+      - run:
+          name: Get old stack workflow id
+          command: |
+            # your code here
+            export OldWorkflowID="the id here"
+            export STACKS=[] #put the list of stacks here
+      - run:
+          name: Remove old stacks and files
+          command: |
+            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+            then
+              # your code here
+            fi
 
 workflows:
   default:

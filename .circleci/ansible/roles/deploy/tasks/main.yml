@@ -4,13 +4,11 @@
   synchronize:
     src: "~/project/artifact.tar.gz"
     dest: /tmp/
-    remote_src: yes
 
 - name: Extract the zipped artifact
   unarchive:
     src: "/tmp/artifact.tar.gz"
     dest: /opt/
-    remote_src: yes 
 
 - name: Install npm dependencies
   command: npm install
@@ -22,6 +20,6 @@
   command: pm2 stop default
 
 - name: Start npm service
-  command: pm2 start npm -- start
+  command: pm2 start "ts-node -r dotenv/config src/main.ts" --name "udapeople"
   args:
-    cwd: /opt/backend
+    cwd: /opt/backend/ # maybe i need to start npm in /opt/backend/src/main.ts 
