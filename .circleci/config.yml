@@ -251,8 +251,7 @@ jobs:
       - run:
           name: Install Ansible
           command: |
-            yum install -y ansible
-            ansible --version
+            pip3 install ansible
       - run:
           name: Install Node and NPM
           command: |
@@ -429,5 +428,5 @@ workflows:
           requires: [configure-infrastructure]
       - deploy-frontend:
           requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations]
+      # - deploy-backend:
+      #     requires: [run-migrations]
