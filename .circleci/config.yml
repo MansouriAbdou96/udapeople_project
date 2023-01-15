@@ -242,16 +242,24 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
+      - run: 
+          name: install tar gzip and node, npm...
+          command: |
+            yum install -y curl tar gzip curl
+            curl -sL https://rpm.nodesource.com/setup_14.x | bash -
+            yum install -y nodejs
+            node -v 
+            npm -v
       - run:
           name: Install Python
-          command: |
-            yum -y install tar gzip 
+          command: | 
             yum install -y python3
             python3 --version
       - run:
           name: Install Ansible
           command: |
-            pip3 install ansible
+            pip3 install --user ansible
+            sudo yum install -y npm
       - run:
           name: Get backend url
           command: |
