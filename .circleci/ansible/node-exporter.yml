@@ -1,6 +1,6 @@
 ---
 
-- name: Exersice for setting up a web server in an EC2
+- name: Configure prometheus node exporter 
   hosts: web
   user: ubuntu
   become: true
