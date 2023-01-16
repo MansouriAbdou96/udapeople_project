@@ -1,6 +1,6 @@
 defaults: &defaults
   docker: 
-    - image: circleci/node:14.15.1
+    - image: circleci/node:13.8.0
 
 version: 2.1
 
@@ -15,8 +15,8 @@ commands:
           name: Destroy environment 
           when: on_fail
           command: |
-            aws s3 rm s3://udapeople-<<parameters.stack_name>> --recursive
             aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.stack_name>>
+            aws s3 rm s3://udapeople-<<parameters.stack_name>> --recursive
             aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.stack_name>>
 
   revert-migrations:
@@ -247,7 +247,7 @@ jobs:
           name: install tar gzip and node, npm...
           command: |
             yum install -y curl tar gzip curl
-            curl -sL https://rpm.nodesource.com/setup_14.x | bash -
+            curl -sL https://rpm.nodesource.com/setup_13.x | bash -
             yum install -y nodejs
             node -v 
             npm -v
@@ -358,8 +358,8 @@ jobs:
 
       - revert-migrations:
           workflowID: "${CIRCLE_WORKFLOW_ID:0:7}" 
-      - destory_environment:
-          stack_name: "${CIRCLE_WORKFLOW_ID:0:7}"
+      # - destory_environment:
+      #     stack_name: "${CIRCLE_WORKFLOW_ID:0:7}"
 
   cloudfront-update:
     docker:

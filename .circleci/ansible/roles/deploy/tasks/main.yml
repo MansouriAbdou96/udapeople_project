@@ -18,8 +18,9 @@
 
 - name: Start npm service
   shell: |
-    sudo npm install -g ts-node
-    pm2 start ~/backend/src/main.ts -i 0 -f --interpreter /usr/local/bin/ts-node
+    pm2 start npm -- start 
+  args:
+    chdir: ~/backend/
 
 
   environment:
