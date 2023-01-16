@@ -1,0 +1,10 @@
+---
+
+- name: Exersice for setting up a web server in an EC2
+  hosts: web
+  user: ubuntu
+  become: true
+  become_method: sudo
+  become_user: root
+  roles:
+    - configure-prometheus-node-exporter

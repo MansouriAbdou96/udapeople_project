@@ -376,7 +376,7 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudfront.yml \
               --stack-name InitialStack\
-              --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}"
+              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
       
       - revert-migrations:
           workflowID: "${CIRCLE_WORKFLOW_ID:0:7}" 
@@ -416,55 +416,71 @@ jobs:
             if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
             then
               aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
               aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
             fi
 
 workflows:
   default:
     jobs:
-      # - build-frontend:
-      #     filters:
-      #       branches:
-      #         only: [dev-branch]
-      # - build-backend:
-      #     filters:
-      #       branches:
-      #         only: [dev-branch]
-      # - test-frontend:
-      #     requires: [build-frontend]
-      #     filters:
-      #       branches:
-      #         only: [dev-branch]
-      # - test-backend:
-      #     requires: [build-backend]
-      #     filters:
-      #       branches:
-      #         only: [dev-branch]
-      # - scan-frontend:
-      #     requires: [build-frontend]
-      #     filters:
-      #       branches:
-      #         only: [dev-branch]
-      # - scan-backend:
-      #     requires: [build-backend]
-      #     filters:
-      #       branches:
-      #         only: [dev-branch]
-      - deploy-infrastructure:
-          # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+      - build-frontend:
           filters:
             branches:
-              only: [test-feature-branch]
+              only: [dev-branch]
+      - build-backend:
+          filters:
+            branches:
+              only: [dev-branch]
+      - test-frontend:
+          requires: [build-frontend]
+          filters:
+            branches:
+              only: [dev-branch]
+      - test-backend:
+          requires: [build-backend]
+          filters:
+            branches:
+              only: [dev-branch]
+      - scan-frontend:
+          requires: [build-frontend]
+          filters:
+            branches:
+              only: [dev-branch]
+      - scan-backend:
+          requires: [build-backend]
+          filters:
+            branches:
+              only: [dev-branch]
+      - deploy-infrastructure:
+          filters:
+            branches:
+              only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
+          filters:
+            branches:
+              only: [master]
       - run-migrations:
           requires: [configure-infrastructure]
+          filters:
+            branches:
+              only: [master]
       - deploy-frontend:
           requires: [run-migrations]
+          filters:
+            branches:
+              only: [master]
       - deploy-backend:
           requires: [run-migrations]
+          filters:
+            branches:
+              only: [master]
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
+          filters:
+            branches:
+              only: [master]
       - cloudfront-update:
           requires: [smoke-test]
+          filters:
+            branches:
+              only: [master]
