@@ -507,8 +507,13 @@ workflows:
           filters:
             branches:
               only: [master]
+      - cleanup:
+          requires: [cloudfront-update]
+          filters:
+            branches:
+              only: [master]
       - config-prometheus-node-exporter:
-          requires: [smoke-test]
+          requires: [cloudfront-update]
           filters:
             branches:
               only: [master]
