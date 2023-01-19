@@ -22,7 +22,7 @@
   args:
     chdir: ~/backend/
 
-
+# changing node environment name to production
   environment:
       - NODE_ENV: production
       - TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION')}}"
