@@ -25,7 +25,7 @@ Resources:
           FromPort: 9100
           ToPort: 9100
           CidrIp: 0.0.0.0/0
-
+ 
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
@@ -39,3 +39,9 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub backend-${ID}
+
+  EIPAssociation:
+    Type: "AWS::EC2::EIPAssociation"
+    Properties:
+      InstanceId: !Ref EC2Instance
+      AllocationId: eipalloc-086e2ceba2c58e7ed
