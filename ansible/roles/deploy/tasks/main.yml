@@ -7,7 +7,7 @@
 
 - name: Extract the zipped artifact
   unarchive:
-    src: ~/project/artifact.tar.gz
+    src: /home/jenkins/workspace/udapeople_pipeline/artifact.tar.gz
     dest: ~/backend/
 
 - name: Install npm dependencies
